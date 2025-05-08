@@ -31,16 +31,20 @@ with mlflow.start_run():
     with open(metrics_path) as f:
         metrics = json.load(f)
 
-    print(" Metrics:", metrics)
+    print("Metrics:", metrics)
     mlflow.log_metrics(metrics)
-    mlflow.log_artifact(metrics_path, artifact_path="log")
+    mlflow.log_artifact(metrics_path, artifact_path="eval")
 
-    # ---------- Log Model ----------
+    # ---------- Log Model Artifact ----------
     model_path = "models/hybrid_model/model.onnx"
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"{model_path} not found!")
 
-    mlflow.log_artifact(model_path, artifact_path="compressed_model")
+    mlflow.log_artifact(model_path, artifact_path="model")
+
+    # ---------- Log Model Size ----------
+    model_size_mb = os.path.getsize(model_path) / (1024 * 1024)
+    mlflow.log_metric("model_size_mb", round(model_size_mb, 2))
 
     # ---------- Conditional Register ----------
     should_register = True
@@ -53,11 +57,10 @@ with mlflow.start_run():
                 break
 
     if mlflow_cfg.get("register_model") and should_register:
-        print(" Registering model...")
+        print(" Registering model to MLflow...")
         mlflow.register_model(
-            model_uri=f"runs:/{run_id}/compressed_model",
+            model_uri=f"runs:/{run_id}/model",
             name=mlflow_cfg["registry_model_name"]
         )
 
-    print(" Pipeline complete.")
-
+    print(" Pipeline completed.")
