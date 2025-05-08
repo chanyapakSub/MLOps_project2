@@ -1,3 +1,31 @@
 .history/
-.models/
-.models_clean/
+models/
+mlops_clean/
+data/
+
+# .gitignore
+# ignore models and data
+*.bin
+*.pt
+*.onnx
+*.safetensors
+*.ckpt
+*.pkl
+*.zip
+*.tar.gz
+*.h5
+*.safetensors
+*.bin
+*.pt
+*.jsonl
+
+# ignore cache / temp
+__pycache__/
+.ipynb_checkpoints/
+*.log
+*.tmp
+*.cache
+
+# VSCode
+.vscode/
+

@@ -1,0 +1,11 @@
+{
+  "epochs": 2,
+  "train_batch_size": 2,
+  "eval_batch_size": 2,
+  "gradient_accumulation_steps": 4,
+  "learning_rate": 1e-5,  
+  "max_length": 512,
+  "logging_steps": 50,
+  "fp16": false,  
+  "save_total_limit": 2
+}
