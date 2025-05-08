@@ -1,0 +1,5 @@
+{
+    "tracking_uri": "https://mlflow.ap-southeast-2.sagemaker.aws/mlflow/v2/",
+    "experiment_name": "compressed-models"
+  }
+  
