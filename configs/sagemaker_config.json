@@ -3,7 +3,7 @@
     "endpoint_name": "Financial-endpoint",
     "role_arn": "arn:aws:iam::130930644868:user/MLops",
     "model_artifact": "s3://modelmlopss/Model/model.tar.gz",
-    "instance_type": "ml.t2.medium",
+    "instance_type": "ml.t3.medium",
     "region": "ap-southeast-2",
     "image_uri": "763104351884.dkr.ecr.ap-southeast-2.amazonaws.com/huggingface-pytorch-inference:1.13.1-transformers4.26.0-cpu-py38-ubuntu20.04"
   }

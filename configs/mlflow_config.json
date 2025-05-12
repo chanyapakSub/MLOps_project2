@@ -2,5 +2,7 @@
   "tracking_uri": "https://studio-d-zjereoup2hmm.studio.ap-southeast-2.sagemaker.aws/mlflow/v2",
   "experiment_name": "compressed-models",
   "register_model": true,
-  "registry_model_name": "tinyllama-compressed"
+  "registry_model_name": "tinyllama-compressed",
+  "s3_bucket": "modelmlopss",
+  "s3_key": "Model/model.tar.gz"
 }

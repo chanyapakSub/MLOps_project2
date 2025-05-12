@@ -1,8 +1,9 @@
-import os
+import os 
 import json
 import mlflow
 import subprocess
 from datetime import datetime
+import boto3
 
 # ---------- Load Config ----------
 with open("configs/mlflow_config.json") as f:
@@ -57,6 +58,18 @@ with mlflow.start_run():
     # ---------- Log Model Size ----------
     model_size_mb = os.path.getsize(model_path) / (1024 * 1024)
     mlflow.log_metric("model_size_mb", round(model_size_mb, 2))
+
+    # ---------- Upload to S3 ----------
+    print("Uploading model.tar.gz to S3...")
+    tar_path = "model.tar.gz"
+    s3_bucket = mlflow_cfg["s3_bucket"]
+    s3_key = mlflow_cfg["s3_key"]
+    if not os.path.exists(tar_path):
+        raise FileNotFoundError(f"{tar_path} not found!")
+
+    s3 = boto3.client("s3")
+    s3.upload_file(tar_path, s3_bucket, s3_key)
+    print(f"Uploaded to s3://{s3_bucket}/{s3_key}")
 
     # ---------- Conditional Register ----------
     should_register = True
