@@ -1,0 +1,16 @@
+{
+  "model_dir": "models/finetuned_model",
+  "tag": "before_compress",
+  "public": {
+    "rougeL": 0.004414682106288767,
+    "bleu": 0.0003972539641915735,
+    "exact_match": 0.0,
+    "latency_sec": 6.9371,
+    "throughput_tokens_per_sec": 13.16,
+    "model_size_mb": 16792.56 
+  },
+  "private": {
+    "latency_sec": 5.523,
+    "throughput_tokens_per_sec": 16.29
+  }
+}

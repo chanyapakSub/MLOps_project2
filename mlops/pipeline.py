@@ -13,17 +13,29 @@ mlflow.set_experiment(mlflow_cfg["experiment_name"])
 
 with mlflow.start_run():
     run_id = mlflow.active_run().info.run_id
-    print(f"Run ID: {run_id}")
+    print(f" Run ID: {run_id}")
 
     # ---------- Training ----------
     print("Training model...")
     subprocess.run(["python", "scripts/trains/train.py"], check=True)
 
+    # ---------- Evaluate BEFORE Compression ----------
+    print("Evaluating BEFORE compression...")
+    subprocess.run(["python", "scripts/eval_metrics.py",
+                    "--model_dir", "models/finetuned_model",
+                    "--tag", "before_compress"], check=True)
+
     # ---------- Compression ----------
     print("Compressing model...")
     subprocess.run(["python", "scripts/compress/quantize.py"], check=True)
 
-    # ---------- Load Metrics ----------
+    # ---------- Evaluate AFTER Compression ----------
+    print("Evaluating AFTER compression...")
+    subprocess.run(["python", "scripts/eval_metrics.py",
+                    "--model_dir", "models/quantize_model",
+                    "--tag", "after_compress"], check=True)
+
+    # ---------- Load Post-Compression Metrics ----------
     metrics_path = "log/metrics.json"
     if not os.path.exists(metrics_path):
         raise FileNotFoundError(f"{metrics_path} not found!")
@@ -31,12 +43,12 @@ with mlflow.start_run():
     with open(metrics_path) as f:
         metrics = json.load(f)
 
-    print("Metrics:", metrics)
+    print("Metrics (after compress):", metrics)
     mlflow.log_metrics(metrics)
     mlflow.log_artifact(metrics_path, artifact_path="eval")
 
     # ---------- Log Model Artifact ----------
-    model_path = "models/hybrid_model/model.onnx"
+    model_path = "models/quantize_model/model.onnx"
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"{model_path} not found!")
 
@@ -53,14 +65,14 @@ with mlflow.start_run():
             val = metrics.get(metric, 0)
             if val < threshold:
                 should_register = False
-                print(f" Skipping register: {metric}={val} < {threshold}")
+                print(f"Skipping register: {metric}={val} < {threshold}")
                 break
 
     if mlflow_cfg.get("register_model") and should_register:
-        print(" Registering model to MLflow...")
+        print("Registering model to MLflow...")
         mlflow.register_model(
             model_uri=f"runs:/{run_id}/model",
             name=mlflow_cfg["registry_model_name"]
         )
 
-    print(" Pipeline completed.")
+    print("Pipeline completed.")

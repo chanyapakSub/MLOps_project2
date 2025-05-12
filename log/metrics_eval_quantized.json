@@ -1,0 +1,18 @@
+{
+  "model_dir": "models/quantize_model",
+  "tag": "quantized",
+  "model_file_size_MB": 1052.42,
+  "model_type": "OpenVINO",
+  "public": {
+    "rougeL": 0.004071447549129965,
+    "bleu": 0.00038476429970188435,
+    "exact_match": 0.0,
+    "bertscore_f1": 0.7908924794134724,
+    "latency_sec": 1.5304,
+    "throughput_tokens_per_sec": 59.66
+  },
+  "private": {
+    "latency_sec": 1.4729,
+    "throughput_tokens_per_sec": 61.09
+  }
+}

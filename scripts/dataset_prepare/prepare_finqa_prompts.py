@@ -9,19 +9,15 @@ os.makedirs(OUT_DIR, exist_ok=True)
 def build_prompt(entry):
     question = entry["qa"]["question"]
     answer = str(entry["qa"]["exe_ans"])  # ใช้ exe_ans เป็นคำตอบ
-
     # รวม context: pre_text + table + post_text
     context_parts = entry.get("pre_text", []) + flatten_table(entry.get("table", [])) + entry.get("post_text", [])
     context = " ".join(context_parts)
 
     prompt = f"""### Question:
-{question}
-
-### Context:
-{context}
-
-### Answer:"""
-
+    {question}
+    ### Context:
+    {context}
+    ### Answer:"""
     return {
         "prompt": prompt.strip(),
         "response": answer.strip()
