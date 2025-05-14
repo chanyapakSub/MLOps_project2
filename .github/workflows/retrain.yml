@@ -1,4 +1,4 @@
-name: Retrain and Deploy Every 3 Days
+name: Retrain and Deploy Every 6 hour
 
 on:
   schedule:
