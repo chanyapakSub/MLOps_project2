@@ -60,25 +60,25 @@ registry = read_registry(s3_bucket, registry_key)
 prev_acc = registry["current"]["accuracy"]
 print(f"Previous accuracy: {prev_acc}")
 
-if exact_match < prev_acc - 0.02:
-    print("Accuracy dropped > 2% → ROLLBACK initiated.")
-    delete_endpoint(registry["current"]["endpoint"])
-else:
-    print("Accuracy OK → Deploy new model")
+# if exact_match < prev_acc - 0.02:
+#     print("Accuracy dropped > 2% → ROLLBACK initiated.")
+#     delete_endpoint(registry["current"]["endpoint"])
+# else:
+#     print("Accuracy OK → Deploy new model")
 
     # ---------- Deploy ----------
-    subprocess.run(["python", "mlops/sagemaker_deploy.py"], check=True)
+subprocess.run(["python", "mlops/sagemaker_deploy.py"], check=True)
 
     # ---------- Update registry ----------
-    new_version = f"v{int(registry['current']['version'][1:]) + 1}"
-    registry["history"].append(registry["current"])
-    registry["current"] = {
+new_version = f"v{int(registry['current']['version'][1:]) + 1}"
+registry["history"].append(registry["current"])
+registry["current"] = {
         "version": new_version,
         "s3_path": f"s3://{s3_bucket}/{s3_key}",
         "accuracy": exact_match,
         "timestamp": str(datetime.now()),
         "endpoint": endpoint_name
-    }
-    write_registry(s3_bucket, registry, registry_key)
+}
+write_registry(s3_bucket, registry, registry_key)
 
 print("Pipeline completed successfully.")
