@@ -95,7 +95,7 @@ importlib-metadata==6.11.0
 importlib-resources==6.1.1
 inflection==0.5.1
 ipykernel==6.29.5
-ipython==8.36.0
+ipython>=8.0
 itsdangerous==2.1.2
 jedi==0.19.2
 Jinja2==3.1.3
