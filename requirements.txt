@@ -127,7 +127,7 @@ mpmath==1.3.0
 multidict==6.0.4
 multiprocess==0.70.16
 nest-asyncio==1.6.0
-networkx==3.3
+networkx==3.2.1
 neural_compressor @ git+https://github.com/intel/neural-compressor.git@d0a371d5b390af132709a608684889ecf1e0ff87
 nltk==3.9.1
 numpy==1.26.4
