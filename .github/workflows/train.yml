@@ -1,9 +1,7 @@
 name: Train and Register Model
 
 on:
-  # push:
-  #   branches: [main]
-  workflow_dispatch:
+  workflow_dispatch:  # ✅ รันแบบ manual
 
 jobs:
   train:
@@ -16,11 +14,17 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.10"
+        python-version: "3.9"  
 
-    - name: Install dependencies
+    - name: Upgrade pip
+      run: pip install --upgrade pip
+
+    - name: Install PyTorch (CPU version)
       run: |
-        pip install --upgrade pip
+        pip install torch==2.2.2+cpu torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+    - name: Install remaining dependencies
+      run: |
         pip install -r requirements.txt
 
     - name: Run MLOps pipeline
