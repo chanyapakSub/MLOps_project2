@@ -1,7 +1,7 @@
 {
     "model_name": "Financial",
     "endpoint_name": "Financial-endpoint",
-    "role_arn": "arn:aws:iam::130930644868:user/MLops",
+    "role_arn": "arn:aws:iam::130930644868:role/service-role/SageMaker-ExecutionRole-20250514T011240",
     "model_artifact": "s3://modelmlopss/Model/model.tar.gz",
     "instance_type": "ml.t3.medium",
     "region": "ap-southeast-2",

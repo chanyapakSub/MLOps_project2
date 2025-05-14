@@ -2,6 +2,7 @@
 models/quantize_model_int8
 models/base_model
 models/finetuned_model
+models/pruned_model
 mlops_clean/
 data/
 .env

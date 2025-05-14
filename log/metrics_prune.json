@@ -1,0 +1,6 @@
+{
+  "compression": "structured_prune",
+  "target_sparsity": 0.5,
+  "pattern": "2:4",
+  "calibration_samples": 50
+}
