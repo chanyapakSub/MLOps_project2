@@ -177,7 +177,7 @@ python-multipart==0.0.20
 python-nvd3==0.15.0
 python-slugify==8.0.1
 pytz==2023.3.post1
-pywin32==306 
+# pywin32==306 
 PyYAML==6.0.1
 pyzmq==26.4.0
 referencing==0.32.1
