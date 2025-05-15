@@ -13,7 +13,7 @@ from scripts.aws_utils import read_registry, write_registry, delete_endpoint
 # from scripts.aws_utils import read_registry, write_registry, delete_endpoint
 
 # ---------- Load Config ----------
-with open("configs/mlflow_config.json") as f:
+with open("configs/sagemaker_config.json") as f:
     mlflow_cfg = json.load(f)
 
 s3_bucket = mlflow_cfg["s3_bucket"]
@@ -57,7 +57,7 @@ tar_path = "model.tar.gz"
 if not os.path.exists(tar_path):
     raise FileNotFoundError(f"{tar_path} not found!")
 
-s3 = boto3.client("s3" , REGION)
+s3 = boto3.client("s3" , region_name = REGION)
 s3.upload_file(tar_path, s3_bucket, s3_key)
 print(f"Uploaded model to: s3://{s3_bucket}/{s3_key}")
 
