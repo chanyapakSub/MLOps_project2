@@ -16,6 +16,7 @@ huggingface_estimator = HuggingFace(
     instance_type="ml.t3.medium",
     instance_count=1,
     role=sm_cfg["role_arn"],
+    py_version="py38",
     image_uri="763104351884.dkr.ecr.ap-southeast-2.amazonaws.com/huggingface-pytorch-training:1.10-transformers4.17-cpu-py38-ubuntu20.04",
     hyperparameters={
         "model_s3_path": model_cfg["model_s3_path"],
