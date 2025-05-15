@@ -1,5 +1,5 @@
 {
-    "model_path": "data/model/tinyllama-1.1b",
+    "model_path": "models/base_model/tinyllama-1.1b",
     "output_dir": "models/finetuned_model",
     "train_file_local": "data/dataset/finqa_prompt/train.jsonl",
     "eval_file_local": "data/dataset/finqa_prompt/dev.jsonl",
