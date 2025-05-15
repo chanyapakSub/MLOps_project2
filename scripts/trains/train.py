@@ -101,9 +101,9 @@
 
 
 
-
 import os
 import json
+import tarfile
 import argparse
 import boto3
 import torch
@@ -123,11 +123,14 @@ parser.add_argument("--train_file", type=str, required=True)
 parser.add_argument("--eval_file", type=str, required=True)
 parser.add_argument("--output_dir", type=str, default="/opt/ml/model")
 parser.add_argument("--fp16", type=bool, default=False)
+parser.add_argument("--upload_s3_path", type=str, required=True)  # 🔺 NEW: path to upload fine-tuned model
 args = parser.parse_args()
+
+REGION = "ap-southeast-2"
 
 # ===== DOWNLOAD MODEL FROM S3 =====
 def download_model_from_s3(s3_uri, local_dir):
-    s3 = boto3.client("s3", region_name="ap-southeast-2")
+    s3 = boto3.client("s3", region_name=REGION)
     bucket, key_prefix = s3_uri.replace("s3://", "").split("/", 1)
     paginator = s3.get_paginator("list_objects_v2")
     for page in paginator.paginate(Bucket=bucket, Prefix=key_prefix):
@@ -136,6 +139,16 @@ def download_model_from_s3(s3_uri, local_dir):
             local_path = os.path.join(local_dir, os.path.relpath(s3_key, key_prefix))
             os.makedirs(os.path.dirname(local_path), exist_ok=True)
             s3.download_file(bucket, s3_key, local_path)
+
+# ===== UPLOAD TO S3 AFTER TRAINING =====
+def upload_model_to_s3(local_dir, s3_uri):
+    tar_path = "model.tar.gz"
+    with tarfile.open(tar_path, "w:gz") as tar:
+        tar.add(local_dir, arcname=".")
+    s3 = boto3.client("s3", region_name=REGION)
+    bucket, key = s3_uri.replace("s3://", "").split("/", 1)
+    s3.upload_file(tar_path, bucket, key)
+    print(f"✅ Uploaded to s3://{bucket}/{key}")
 
 # ===== CUSTOM DATASET =====
 class PromptDataset(Dataset):
@@ -160,8 +173,8 @@ class PromptDataset(Dataset):
     def __getitem__(self, idx):
         return {k: torch.tensor(v) for k, v in self.data[idx].items()}
 
-# ===== DOWNLOAD MODEL TO LOCAL =====
-print(f" Downloading model from: {args.model_s3_path}")
+# ===== DOWNLOAD BASE MODEL TO LOCAL =====
+print(f"☁️ Downloading base model from: {args.model_s3_path}")
 local_model_path = "./tmp_model"
 download_model_from_s3(args.model_s3_path, local_model_path)
 
@@ -198,6 +211,7 @@ training_args = TrainingArguments(
     overwrite_output_dir=True,
     report_to="none"
 )
+
 # ===== TRAIN =====
 trainer = Trainer(
     model=model,
@@ -212,4 +226,13 @@ trainer.train()
 trainer.save_model(args.output_dir)
 tokenizer.save_pretrained(args.output_dir)
 
-print(f" Training complete. Model saved to {args.output_dir}")
+# ===== REMOVE BASE WEIGHT BEFORE UPLOAD =====
+bin_path = os.path.join(args.output_dir, "pytorch_model.bin")
+if os.path.exists(bin_path):
+    print(f"🧹 Removing base model weight: {bin_path}")
+    os.remove(bin_path)
+
+# ===== UPLOAD TO S3 =====
+upload_model_to_s3(args.output_dir, args.upload_s3_path)
+
+print(f"🎯 Training complete. Fine-tuned model uploaded to {args.upload_s3_path}")
