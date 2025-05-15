@@ -191,7 +191,7 @@ local_model_path = "./tmp_model"
 download_model_from_s3(args.model_s3_path, local_model_path)
 
 # ===== LOAD TOKENIZER & MODEL =====
-tokenizer = AutoTokenizer.from_pretrained(local_model_path)
+tokenizer = AutoTokenizer.from_pretrained(local_model_path, use_fast=False)
 if tokenizer.pad_token is None:
     tokenizer.pad_token = tokenizer.eos_token
 
