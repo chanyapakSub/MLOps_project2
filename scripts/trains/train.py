@@ -100,7 +100,6 @@
 
 
 
-
 import os
 import json
 import tarfile
@@ -124,10 +123,8 @@ parser.add_argument("--eval_file", type=str)
 parser.add_argument("--output_dir", type=str, default="/opt/ml/model")
 parser.add_argument("--fp16", type=bool, default=False)
 parser.add_argument("--upload_s3_path", type=str)
-
 args, unknown = parser.parse_known_args()
 
-# If no args provided, fallback to config
 if not any(vars(args).values()):
     with open("configs/model_config.json") as f:
         cfg = json.load(f)
@@ -140,7 +137,7 @@ if not any(vars(args).values()):
 
 REGION = "ap-southeast-2"
 
-# ===== DOWNLOAD MODEL FROM S3 =====
+# ===== DOWNLOAD FUNCTIONS =====
 def download_model_from_s3(s3_uri, local_dir):
     s3 = boto3.client("s3", region_name=REGION)
     bucket, key_prefix = s3_uri.replace("s3://", "").split("/", 1)
@@ -152,6 +149,12 @@ def download_model_from_s3(s3_uri, local_dir):
             os.makedirs(os.path.dirname(local_path), exist_ok=True)
             s3.download_file(bucket, s3_key, local_path)
 
+def download_file_from_s3(s3_uri, local_path):
+    s3 = boto3.client("s3", region_name=REGION)
+    bucket, key = s3_uri.replace("s3://", "").split("/", 1)
+    os.makedirs(os.path.dirname(local_path), exist_ok=True)
+    s3.download_file(bucket, key, local_path)
+
 # ===== UPLOAD TO S3 AFTER TRAINING =====
 def upload_model_to_s3(local_dir, s3_uri):
     tar_path = "model.tar.gz"
@@ -160,7 +163,7 @@ def upload_model_to_s3(local_dir, s3_uri):
     s3 = boto3.client("s3", region_name=REGION)
     bucket, key = s3_uri.replace("s3://", "").split("/", 1)
     s3.upload_file(tar_path, bucket, key)
-    print(f"Uploaded to s3://{bucket}/{key}")
+    print(f"✅ Uploaded to s3://{bucket}/{key}")
 
 # ===== CUSTOM DATASET =====
 class PromptDataset(Dataset):
@@ -186,9 +189,16 @@ class PromptDataset(Dataset):
         return {k: torch.tensor(v) for k, v in self.data[idx].items()}
 
 # ===== DOWNLOAD BASE MODEL TO LOCAL =====
-print(f"Downloading base model from: {args.model_s3_path}")
+print(f"📦 Downloading base model from: {args.model_s3_path}")
 local_model_path = "./tmp_model"
 download_model_from_s3(args.model_s3_path, local_model_path)
+
+# ===== DOWNLOAD DATASET FILES TO LOCAL =====
+local_train_path = "./tmp_data/train.jsonl"
+local_eval_path = "./tmp_data/dev.jsonl"
+print(f"📥 Downloading dataset files...")
+download_file_from_s3(args.train_file, local_train_path)
+download_file_from_s3(args.eval_file, local_eval_path)
 
 # ===== LOAD TOKENIZER & MODEL =====
 tokenizer = AutoTokenizer.from_pretrained(local_model_path, use_fast=False)
@@ -201,8 +211,8 @@ model = AutoModelForCausalLM.from_pretrained(
 )
 
 # ===== LOAD DATA =====
-train_dataset = PromptDataset(args.train_file, tokenizer)
-eval_dataset = PromptDataset(args.eval_file, tokenizer)
+train_dataset = PromptDataset(local_train_path, tokenizer)
+eval_dataset = PromptDataset(local_eval_path, tokenizer)
 
 # ===== COLLATOR =====
 data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
@@ -241,10 +251,10 @@ tokenizer.save_pretrained(args.output_dir)
 # ===== REMOVE BASE WEIGHT BEFORE UPLOAD =====
 bin_path = os.path.join(args.output_dir, "pytorch_model.bin")
 if os.path.exists(bin_path):
-    print(f"Removing base model weight: {bin_path}")
+    print(f"🧹 Removing base model weight: {bin_path}")
     os.remove(bin_path)
 
 # ===== UPLOAD TO S3 =====
 upload_model_to_s3(args.output_dir, args.upload_s3_path)
 
-print(f"Training complete. Fine-tuned model uploaded to {args.upload_s3_path}")
+print(f"✅ Training complete. Fine-tuned model uploaded to {args.upload_s3_path}")
