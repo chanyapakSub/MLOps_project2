@@ -1,7 +1,7 @@
 import boto3, json
 
-s3 = boto3.client('s3')
-sm = boto3.client('sagemaker')
+s3 = boto3.client('s3' , region_name="ap-southeast-2")
+sm = boto3.client('sagemaker', region_name="ap-southeast-2")
 
 def upload_to_s3(local_path, bucket, s3_path):
     s3.upload_file(local_path, bucket, s3_path)

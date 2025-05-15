@@ -10,6 +10,7 @@ TAR_PATH = "model.tar.gz"
 S3_BUCKET = "modelmlopss"
 S3_KEY = "Model/model.tar.gz"
 CONFIG_PATH = "configs/mlflow_config.json"
+REGION = "ap-southeast-2"
 
 # --- Load MLflow config ---
 with open(CONFIG_PATH, "r") as f:
@@ -26,12 +27,12 @@ def compress_model():
 
 def upload_to_s3():
     print(f"☁️ Uploading to s3://{S3_BUCKET}/{S3_KEY}")
-    s3 = boto3.client("s3")
+    s3 = boto3.client("s3" , REGION)
     s3.upload_file(TAR_PATH, S3_BUCKET, S3_KEY)
     print("✅ Upload complete.")
 
 def verify_upload():
-    s3 = boto3.client("s3")
+    s3 = boto3.client("s3" ,REGION)
     response = s3.head_object(Bucket=S3_BUCKET, Key=S3_KEY)
     size_mb = response["ContentLength"] / (1024 * 1024)
     print(f"📁 Verified on S3 ({size_mb:.2f} MB)")

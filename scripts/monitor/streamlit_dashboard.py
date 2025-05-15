@@ -9,7 +9,7 @@ BUCKET = "modelmlopss"
 KEY = "registry/registry.json"
 
 # Load registry from S3
-s3 = boto3.client("s3")
+s3 = boto3.client("s3", region_name="ap-southeast-2")
 content = s3.get_object(Bucket=BUCKET, Key=KEY)
 data = json.loads(content["Body"].read().decode())
 

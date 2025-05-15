@@ -20,7 +20,7 @@ s3_bucket = mlflow_cfg["s3_bucket"]
 s3_key = mlflow_cfg["s3_key"]
 endpoint_name = mlflow_cfg["endpoint_name"]
 registry_key = "registry/registry.json"
-
+REGION = "ap-southeast-2"
 # ---------- Train ----------
 print("Training model...")
 subprocess.run(["python", "scripts/trains/train.py"], check=True)
@@ -57,7 +57,7 @@ tar_path = "model.tar.gz"
 if not os.path.exists(tar_path):
     raise FileNotFoundError(f"{tar_path} not found!")
 
-s3 = boto3.client("s3")
+s3 = boto3.client("s3" , REGION)
 s3.upload_file(tar_path, s3_bucket, s3_key)
 print(f"Uploaded model to: s3://{s3_bucket}/{s3_key}")
 
