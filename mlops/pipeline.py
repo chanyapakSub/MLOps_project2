@@ -2,9 +2,15 @@ import os
 import json
 import subprocess
 from datetime import datetime
+import threading
 import boto3
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from scripts.aws_utils import read_registry, write_registry, delete_endpoint
+
+# from scripts.aws_utils import read_registry, write_registry, delete_endpoint
 
 # ---------- Load Config ----------
 with open("configs/mlflow_config.json") as f:
@@ -68,6 +74,15 @@ print(f"Previous accuracy: {prev_acc}")
 
     # ---------- Deploy ----------
 subprocess.run(["python", "mlops/sagemaker_deploy.py"], check=True)
+
+# ---------- Schedule Endpoint Auto-Delete ----------
+def schedule_endpoint_deletion(endpoint_name, delay_seconds=1800):
+    def delete():
+        print(f"Auto-deleting endpoint '{endpoint_name}' after 30 minutes...")
+        delete_endpoint(endpoint_name)
+    threading.Timer(delay_seconds, delete).start()
+
+schedule_endpoint_deletion(endpoint_name)
 
     # ---------- Update registry ----------
 new_version = f"v{int(registry['current']['version'][1:]) + 1}"
