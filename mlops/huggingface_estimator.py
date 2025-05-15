@@ -12,7 +12,7 @@ with open("configs/model_config.json") as f:
 # ===== HuggingFace Estimator =====
 huggingface_estimator = HuggingFace(
     entry_point="train.py",
-    source_dir=".",
+    source_dir="scripts/trains",  
     instance_type="ml.t3.medium",
     instance_count=1,
     role=sm_cfg["role_arn"],
