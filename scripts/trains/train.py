@@ -116,16 +116,27 @@ from transformers import (
     DataCollatorForLanguageModeling,
 )
 
-
-# ===== PARSE ARGS from SageMaker =====
+# ===== PARSE ARGS or fallback to config =====
 parser = argparse.ArgumentParser()
-parser.add_argument("--model_s3_path", type=str, required=True)
-parser.add_argument("--train_file", type=str, required=True)
-parser.add_argument("--eval_file", type=str, required=True)
+parser.add_argument("--model_s3_path", type=str)
+parser.add_argument("--train_file", type=str)
+parser.add_argument("--eval_file", type=str)
 parser.add_argument("--output_dir", type=str, default="/opt/ml/model")
 parser.add_argument("--fp16", type=bool, default=False)
-parser.add_argument("--upload_s3_path", type=str, required=True)  # 🔺 NEW: path to upload fine-tuned model
-args = parser.parse_args()
+parser.add_argument("--upload_s3_path", type=str)
+
+args, unknown = parser.parse_known_args()
+
+# If no args provided, fallback to config
+if not any(vars(args).values()):
+    with open("configs/model_config.json") as f:
+        cfg = json.load(f)
+    args.model_s3_path = cfg["model_s3_path"]
+    args.train_file = cfg["train_file"]
+    args.eval_file = cfg["eval_file"]
+    args.output_dir = cfg["output_dir"]
+    args.upload_s3_path = cfg["model_s3_path_finetuned"] + "model.tar.gz"
+    args.fp16 = False
 
 REGION = "ap-southeast-2"
 
@@ -149,7 +160,7 @@ def upload_model_to_s3(local_dir, s3_uri):
     s3 = boto3.client("s3", region_name=REGION)
     bucket, key = s3_uri.replace("s3://", "").split("/", 1)
     s3.upload_file(tar_path, bucket, key)
-    print(f"✅ Uploaded to s3://{bucket}/{key}")
+    print(f"Uploaded to s3://{bucket}/{key}")
 
 # ===== CUSTOM DATASET =====
 class PromptDataset(Dataset):
@@ -175,7 +186,7 @@ class PromptDataset(Dataset):
         return {k: torch.tensor(v) for k, v in self.data[idx].items()}
 
 # ===== DOWNLOAD BASE MODEL TO LOCAL =====
-print(f"☁️ Downloading base model from: {args.model_s3_path}")
+print(f"Downloading base model from: {args.model_s3_path}")
 local_model_path = "./tmp_model"
 download_model_from_s3(args.model_s3_path, local_model_path)
 
@@ -230,10 +241,10 @@ tokenizer.save_pretrained(args.output_dir)
 # ===== REMOVE BASE WEIGHT BEFORE UPLOAD =====
 bin_path = os.path.join(args.output_dir, "pytorch_model.bin")
 if os.path.exists(bin_path):
-    print(f"🧹 Removing base model weight: {bin_path}")
+    print(f"Removing base model weight: {bin_path}")
     os.remove(bin_path)
 
 # ===== UPLOAD TO S3 =====
 upload_model_to_s3(args.output_dir, args.upload_s3_path)
 
-print(f"🎯 Training complete. Fine-tuned model uploaded to {args.upload_s3_path}")
+print(f"Training complete. Fine-tuned model uploaded to {args.upload_s3_path}")

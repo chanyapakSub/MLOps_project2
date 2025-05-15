@@ -83,7 +83,6 @@
 # print(f" Evaluation complete. Metrics saved to: {output_path}")
 
 
-
 import os
 import json
 import time
@@ -94,16 +93,24 @@ from transformers import AutoTokenizer
 from evaluate import load
 from optimum.intel.openvino import OVModelForCausalLM  # ใช้ OpenVINO model loader
 
-# ---------- Parse Arguments ----------
+# ---------- Parse Arguments or Load from Config ----------
 parser = argparse.ArgumentParser()
-parser.add_argument("--model_dir", required=True, help="Path to model directory")
+parser.add_argument("--model_dir", help="Path to model directory")
 parser.add_argument("--tag", default="latest", help="Tag to append to output file")
-parser.add_argument("--test_path", default="data/dataset/test.json", help="Public test set")
-parser.add_argument("--private_test_path", default="data/dataset/private_test.json", help="Private test set")
-args = parser.parse_args()
+parser.add_argument("--test_path", help="Public test set")
+parser.add_argument("--private_test_path", help="Private test set")
+args, unknown = parser.parse_known_args()
+
+if not args.model_dir:
+    with open("configs/model_config.json") as f:
+        cfg = json.load(f)
+    args.model_dir = "models/quantize_model"
+    args.tag = "after_compress"
+    args.test_path = "data/dataset/test.json"
+    args.private_test_path = "data/dataset/private_test.json"
 
 # ---------- Load Model ----------
-print(f" Loading OpenVINO model from {args.model_dir}")
+print(f"📦 Loading OpenVINO model from {args.model_dir}")
 model = OVModelForCausalLM.from_pretrained(args.model_dir)
 tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
 
@@ -115,9 +122,8 @@ def get_model_disk_size(model_dir):
             total_bytes += os.path.getsize(os.path.join(model_dir, fname))
     return round(total_bytes / (1024 * 1024), 2)  # MB
 
-# OpenVINO ไม่สามารถนับ parameters ได้ตรงๆ เหมือน PyTorch
 model_disk_size_mb = get_model_disk_size(args.model_dir)
-print(f"Model file size: {model_disk_size_mb} MB")
+print(f"🧠 Model file size: {model_disk_size_mb} MB")
 
 # ---------- Load Metrics ----------
 rouge = load("rouge")
@@ -131,11 +137,6 @@ def load_data(path):
 
 test_data = load_data(args.test_path)
 private_data = load_data(args.private_test_path)
-
-# ---------- Compute Perplexity (approx) ----------
-def compute_perplexity(texts):
-    # NOTE: OpenVINO doesn't return loss → fallback with dummy value
-    return float('nan')
 
 # ---------- Evaluation Function ----------
 def evaluate_dataset(dataset, has_answer=True):
@@ -172,7 +173,6 @@ def evaluate_dataset(dataset, has_answer=True):
             bertscore.compute(predictions=predictions, references=references, lang="en")["f1"]
         ) / len(predictions)
 
-
     metrics["latency_sec"] = round(total_latency / len(dataset), 4)
     metrics["throughput_tokens_per_sec"] = round(total_tokens / total_latency, 2)
     return metrics
@@ -194,7 +194,7 @@ with open(output_path, "w") as f:
         "private": private_metrics
     }, f, indent=2)
 
-print(f" Evaluation complete. Metrics saved to: {output_path}")
+print(f"📊 Evaluation complete. Metrics saved to: {output_path}")
 
 
 # import os 
