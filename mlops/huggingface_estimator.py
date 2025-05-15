@@ -21,7 +21,7 @@ huggingface_estimator = HuggingFace(
     role=sm_cfg["role_arn"],
     transformers_version="4.26",
     pytorch_version="1.13",
-    py_version="py38",
+    py_version="py39", 
     region=sm_cfg["region"],
 
     # ===== Hyperparameters to pass into train.py via argparse
