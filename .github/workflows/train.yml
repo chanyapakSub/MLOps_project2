@@ -56,8 +56,8 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
 
-      - name: Build Docker image
-        run: docker build -t my-mlops-pipeline .
+      - name: Build Docker image (no cache)
+        run: docker build --no-cache -t my-mlops-pipeline .
 
       - name: Run pipeline inside Docker container
         run: >
@@ -67,5 +67,4 @@ jobs:
           -e AWS_REGION=ap-southeast-2
           -e AWS_DEFAULT_REGION=ap-southeast-2
           my-mlops-pipeline
-
 
