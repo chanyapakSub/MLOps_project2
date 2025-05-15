@@ -120,7 +120,7 @@ def upload_dir_to_s3(local_dir, s3_uri_prefix):
 
 # ----- Load Tokenizer & Model -----
 download_and_extract_model(s3_finetuned_path, "tmp_finetuned_model")
-tokenizer = AutoTokenizer.from_pretrained("tmp_finetuned_model")
+tokenizer = AutoTokenizer.from_pretrained("tmp_finetuned_model", use_fast=False)
 pt_model = AutoModelForCausalLM.from_pretrained("tmp_finetuned_model")
 
 # ----- Load Calibration Dataset -----
