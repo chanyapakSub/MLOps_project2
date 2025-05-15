@@ -19,8 +19,8 @@ huggingface_estimator = HuggingFace(
     instance_type=sm_cfg["instance_type"],  # ex: ml.t3.medium
     instance_count=1,
     role=sm_cfg["role_arn"],
-    transformers_version="4.26",
-    pytorch_version="1.13",
+    transformers_version="4.17",
+    pytorch_version="1.10",
     py_version="py39", 
     region=sm_cfg["region"],
 

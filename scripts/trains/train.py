@@ -198,23 +198,6 @@ training_args = TrainingArguments(
     overwrite_output_dir=True,
     report_to="none"
 )
-
-# training_args = TrainingArguments(
-#     output_dir=model_cfg["output_dir"],
-#     per_device_train_batch_size=train_cfg["train_batch_size"],
-#     per_device_eval_batch_size=train_cfg["eval_batch_size"],
-#     num_train_epochs=train_cfg["epochs"],
-#     eval_strategy="epoch",  
-#     save_strategy="epoch",
-#     logging_steps=train_cfg["logging_steps"],
-#     save_total_limit=train_cfg["save_total_limit"],
-#     gradient_accumulation_steps=train_cfg["gradient_accumulation_steps"],
-#     learning_rate=train_cfg["learning_rate"],
-#     fp16=False, 
-#     overwrite_output_dir=True,
-#     report_to="none"
-# )
-
 # ===== TRAIN =====
 trainer = Trainer(
     model=model,
