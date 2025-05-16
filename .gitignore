@@ -3,6 +3,10 @@ models/quantize_model_int8
 models/base_model
 models/finetuned_model
 models/pruned_model
+mlruns/
+tmp_data/
+tmp_finetuned_model/
+tmp_model/
 mlops_clean/
 data/
 .env

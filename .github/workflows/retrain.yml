@@ -1,8 +1,8 @@
 name: Retrain and Deploy Every 6 hour
 
 on:
-  schedule:
-    - cron: '0 */6 * * *' #retrain ทุก 6 ชม
+  # schedule:
+  #   - cron: '0 */6 * * *' #retrain ทุก 6 ชม
   workflow_dispatch:
 
 jobs:
